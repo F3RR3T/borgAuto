@@ -8,24 +8,30 @@ export REPOSITORY="/mnt/bak/st33vHome"
 #export BORG_PASSPHRASE="" 
 
 # Backup all of /home except a few excluded directories and files
-borg create -v --stats -e none --compression lz4                 \
+borg create -v --stats  --compression lz4                 \
     $REPOSITORY::'{hostname}-{now:%Y-%m-%dT%H:%M}' /home/st33v \
 --exclude '/home/*/.cache'                               \
 --exclude '/home/$USER/cargo'                        \
+--exclude '/home/st33v/.dropbox'                         \
+--exclude '/home/st33v/.config'
 --exclude '/home/lost+found'                             \
 --exclude '*.img'                                        \
 --exclude '*.iso'                                        \
+
+# Backup olho
+borg create -v --stats --compression none --progress     \
+     '/mnt/bak/olho::{now}' /mnt/olho
 
 # Route the normal process logging to journalctl
 2>&1
 
  
 # Prune the repo of extra backups
-borg prune -v $REPOSITORY --prefix '{hostname}-'         \
-    --keep-hourly=6                                      \
-    --keep-daily=7                                       \
-    --keep-weekly=4                                      \
-    --keep-monthly=6                                     \
+#borg prune -v $REPOSITORY --prefix '{hostname}-'         \
+#    --keep-hourly=6                                      \
+#    --keep-daily=7                                       \
+#    --keep-weekly=4                                      \
+#    --keep-monthly=6                                     \
  
 # Include the remaining device capacity in the log
 df -hl | grep --color=never /mnt/bak
