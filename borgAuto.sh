@@ -4,11 +4,34 @@
 # the envvar $REPONAME is something you should just hardcode
  export BORG_REPO="/mnt/bak/borg"  # (now set in ~/.bashrc)
 
+MAXFILES=20     #Max number of file changes to log
+
+# Route the normal process logging to journalctl
+2>&1
+
 # DIFF function
 # List changes between this archive and the previous one
 function Differ {
     newArchive=$(borg list :: -P $1 --last 2 --format {name}{NL})
-    borg diff ::$newArchive
+    diffTmpFile=`mktemp /tmp/borgAutoXXXXX`        #  in /tmp dir
+    borg diff ::$newArchive > $diffTmpFile
+    addFiles=$(grep  '^added' ${diffTmpFile}   | wc -l)
+    remFiles=$(grep  '^removed' ${diffTmpFile} | wc -l)
+    totFiles=$(wc -l ${diffTmpFile} | awk '{print $1}')
+    changeFiles=$(awk -v tot=$totFiles -v a=$addFiles -v r=$remFiles 'BEGIN {print tot - a - r}')
+    if [ ${totFiles} -eq 0 ]; then
+        echo "No changes, additions or deletions since last backup"
+    elif [ ${totFiles} -gt ${MAXFILES} ]; then
+        #echo $(head ${diffTmpFile})
+        head ${diffTmpFile}
+        
+        midFiles=$(awk -v tot=$totFiles -v max=$MAXFILES 'BEGIN {print tot - max}')
+        echo "   ... ${midFiles} more changes (Changed $changeFiles, Added ${addFiles}, Removed ${remFiles})"
+        tail ${diffTmpFile}
+    else
+        cat ${diffTmpFile}
+    fi    
+    rm ${diffTmpFile}
 }
 
 # Backup all of /home except a few excluded directories and files
@@ -35,9 +58,6 @@ Differ cr4y
 echo $'\nCreating Image archive'
 borg create -v --stats --compression none   \
     ::'olho-{now:%Y%m%dT%H%M}' /mnt/olho
-
-# Route the normal process logging to journalctl
-2>&1
 
 Differ olho
 
