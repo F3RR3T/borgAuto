@@ -1,1 +1,11 @@
-/etc/systemd/system/borgBackup.timer
+[Unit]
+Description=Borg Backup Timer
+ 
+[Timer]
+WakeSystem=false
+OnBootSec=3min
+OnCalendar=0/3:00:00
+RandomizedDelaySec=10min
+ 
+[Install]
+WantedBy=timers.target

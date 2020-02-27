@@ -1,1 +1,12 @@
-/etc/systemd/system/borgBackup.service
+[Unit]
+Description=Borg daily backup
+ 
+[Service]
+Type=simple
+Nice=19
+IOSchedulingClass=2
+IOSchedulingPriority=7
+ExecStartPre=-/usr/bin/borg break-lock /mnt/bak/borg
+ExecStart=-/etc/systemd/system/borgAuto.sh
+User=st33v
+Group=st33v
