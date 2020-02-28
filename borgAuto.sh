@@ -66,7 +66,7 @@ backup_exit=$?
 # Prune the repo of extra backups
 echo $'\nPruning repository'
 borg prune --stats          \
-    --list
+    --list                  \
     --keep-within   3d      \
     --keep-daily    14      \
     --keep-weekly   8       \
