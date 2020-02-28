@@ -1,5 +1,6 @@
 [Unit]
 Description=Borg Backup Timer
+Requires=borgBackup.service
  
 [Timer]
 WakeSystem=false
