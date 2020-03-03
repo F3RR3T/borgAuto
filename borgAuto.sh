@@ -34,6 +34,29 @@ function Differ {
     rm ${diffTmpFile}
 }
 
+# Pruning must be performed on named repos, otherwise just the last one
+#  from a period (day/week/etc) is kept.
+function Pruner {
+    if [ $# -eq 1 ]; then
+        borg                        \
+            --prefix $1             \
+            prune                   \
+            --stats                 \
+            --list                  \
+            --dry-run               \
+            --keep-within   3d      \
+            --keep-daily    14      \
+            --keep-weekly   8       \
+            --keep-monthly  12      \
+            --keep-yearly   -1      \
+            ::    
+    else
+      #  sds
+      echo Pruner went wrong.
+    fi
+}
+
+
 # Backup all of /home except a few excluded directories and files
 echo $'\nCreating St33v\'s archive'
 borg create -v --stats  --compression auto,lzma,6    \
@@ -65,14 +88,9 @@ backup_exit=$?
  
 # Prune the repo of extra backups
 echo $'\nPruning repository'
-borg prune --stats          \
-    --list                  \
-    --keep-within   3d      \
-    --keep-daily    14      \
-    --keep-weekly   8       \
-    --keep-monthly  12      \
-    --keep-yearly   -1      \
-    ::    
+Pruner cr4y
+Pruner olho
+
 prune_exit=$?
  
 # Include the remaining device capacity in the log
