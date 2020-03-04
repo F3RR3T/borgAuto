@@ -1,7 +1,9 @@
 #!/usr/bin/bash
 function Pruner {
-    echo 'Hello' $1 There are $# arguments
-    if [ $# -eq 1 ]; then
+    echo 'Hello' $1 There are "$#" arguments
+    echo "ONE  $1  TWO $2 THREE $3"
+    if [ "$#" -eq 1 ]; then
+        echo "I saw $# argument."
         borg prune                  \
             --prefix $1             \
             --list                  \
@@ -19,4 +21,4 @@ function Pruner {
 }
 
 
-Pruner $1
+Pruner "$@"
