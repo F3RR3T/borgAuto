@@ -37,11 +37,10 @@ function Differ {
 # Pruning must be performed on named repos, otherwise just the last one
 #  from a period (day/week/etc) is kept.
 function Pruner {
+    # todo : replace --dry-run with --stats (they can't both be used)
     if [ $# -eq 1 ]; then
-        borg                        \
+        borg prune                  \
             --prefix $1             \
-            prune                   \
-            --stats                 \
             --list                  \
             --dry-run               \
             --keep-within   3d      \
@@ -51,11 +50,9 @@ function Pruner {
             --keep-yearly   -1      \
             ::    
     else
-      #  sds
-      echo Pruner went wrong.
+      echo Pruner went wrong. Call it with just one prefix.
     fi
 }
-
 
 # Backup all of /home except a few excluded directories and files
 echo $'\nCreating St33v\'s archive'
@@ -64,14 +61,9 @@ borg create -v --stats  --compression auto,lzma,6    \
    /home/st33v  \
    /var/log/pacman.log \
    /etc/systemd/system \
-    --exclude '/home/st33v/.cache'      \
-    --exclude '/home/st33v/.local'      \
     --exclude '/home/$USER/cargo'   \
-    --exclude '/home/st33v/.dropbox' \
-    --exclude '/home/st33v/.dropbox-dist' \
-    --exclude '/home/st33v/.config' \
-    --exclude '/home/st33v/.mozilla' \
     --exclude '/home/st33v/.*' \
+    --exclude '*.vdi'               \
     --exclude '*.img'               \
     --exclude '*.iso'             
 
