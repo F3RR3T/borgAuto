@@ -21,14 +21,15 @@ function Differ {
     changeFiles=$(awk -v tot=$totFiles -v a=$addFiles -v r=$remFiles 'BEGIN {print tot - a - r}')
     if [ ${totFiles} -eq 0 ]; then
         echo "No changes, additions or deletions since last backup"
-    elif [ ${totFiles} -gt ${MAXFILES} ]; then
+    elif [ ${totFiles} -gt ${MAXFILES} ]; then     # Lots of changes
         #echo $(head ${diffTmpFile})
         head ${diffTmpFile}
         
         midFiles=$(awk -v tot=$totFiles -v max=$MAXFILES 'BEGIN {print tot - max}')
         echo "   ... ${midFiles} more changes (Changed $changeFiles, Added ${addFiles}, Removed ${remFiles})"
         tail ${diffTmpFile}
-    else
+    else                        # A 'small' number of changes
+        echo ${totFiles} files changed:
         cat ${diffTmpFile}
     fi    
     rm ${diffTmpFile}
@@ -42,7 +43,7 @@ function Pruner {
         borg prune                  \
             --prefix $1             \
             --list                  \
-            --dry-run               \
+            --stats               \
             --keep-within   3d      \
             --keep-daily    14      \
             --keep-weekly   8       \
