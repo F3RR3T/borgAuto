@@ -4,7 +4,6 @@ Requires=borgBackup.service
  
 [Timer]
 WakeSystem=false
-OnBootSec=3min
 OnCalendar=0/3:00:00
 RandomizedDelaySec=10min
  
