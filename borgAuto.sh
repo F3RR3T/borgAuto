@@ -62,6 +62,7 @@ borg create -v --stats  --compression auto,lzma,6    \
    /home/st33v  \
    /var/log/pacman.log \
    /etc/systemd/system \
+   /boot/grub/*.cfg
     --exclude '/home/$USER/cargo'   \
     --exclude '/home/st33v/.*' \
     --exclude '*.vdi'               \
