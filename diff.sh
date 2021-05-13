@@ -4,7 +4,7 @@ function Differ {
     newArchive=$(borg list :: -P $1 --last 2 --format {name}{NL})
     diffTmpFile=`mktemp /tmp/borgAutoXXXXX`        #  in /tmp dir
     borg diff ::$newArchive > $diffTmpFile
-    echo made the difffile $diffTmpFile
+    echo newArchive:  $newArchive
     echo $(wc $diffTmpFile)
     addFiles=$(grep  '^added' ${diffTmpFile}   | wc -l)
     echo $addFiles
@@ -23,7 +23,7 @@ function Differ {
         echo "   ... ${midFiles} more files changed (Added ${addFiles}, Removed ${remFiles})"
         tail ${diffTmpFile}
     else
-        cat ${diffTmpFiles}
+        cat ${diffTmpFile}
 
     fi    
     rm ${diffTmpFile}
