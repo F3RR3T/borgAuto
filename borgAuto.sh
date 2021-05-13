@@ -56,22 +56,26 @@ function Pruner {
 }
 
 # Backup all of /home except a few excluded directories and files
-echo $'\nCreating St33v\'s archive'
+echo $'\nCreating ${USER}\'s archive'
 borg create -v --stats  --compression auto,lzma,6    \
    ::'{hostname}-{user}-{now:%Y%m%dT%H%M}' \
    /home/st33v  \
    /var/log/pacman.log \
+   /etc/fstab          \
    /etc/systemd/system \
    /boot/grub/*.cfg    \
     --exclude '/home/$USER/cargo'   \
     --exclude '/home/st33v/.*' \
     --exclude '*.vdi'               \
     --exclude '*.img'               \
-    --exclude '*.iso'             
+    --exclude '*.iso'               \
+    --exclude '.git/'
 
 Differ cr4y
 
-# Backup olho
+# Backup olho (Image store)
+# don't compress image files; they are already compressed
+# TODO but what about RAW image files (*.NEF etc)
 echo $'\nCreating Image archive'
 borg create -v --stats --compression none   \
     ::'olho-{now:%Y%m%dT%H%M}' /mnt/olho
