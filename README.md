@@ -1,5 +1,5 @@
 # borgAuto
-My customisation and automation of the fantastic Borg backup and deduplication system
+My customisation and automation of the fantastic [Borg backup](https://www.borgbackup.org/) and deduplication system
 
 ## Test Files
 The files
