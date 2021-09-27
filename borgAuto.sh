@@ -56,7 +56,7 @@ function Pruner {
 }
 
 # Backup all of /home except a few excluded directories and files
-echo $'\nCreating ${USER}\'s archive'
+echo $'\n'"Creating ${USER}'s archive"
 borg create -v --stats  --compression auto,lzma,6    \
    ::'{hostname}-{user}-{now:%Y%m%dT%H%M}' \
    /home/st33v  \
