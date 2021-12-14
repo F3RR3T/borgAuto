@@ -19,20 +19,23 @@ function Differ {
     remFiles=$(grep  '^removed' ${diffTmpFile} | wc -l)
     totFiles=$(wc -l ${diffTmpFile} | awk '{print $1}')
     changeFiles=$(awk -v tot=$totFiles -v a=$addFiles -v r=$remFiles 'BEGIN {print tot - a - r}')
+    changes="Changed $changeFiles, Added ${addFiles}, Removed ${remFiles}"
     if [ ${totFiles} -eq 0 ]; then
-        echo "No changes, additions or deletions since last backup"
+        changes="No changes, additions or deletions since last backup"
+        echo ${changes}
     elif [ ${totFiles} -gt ${MAXFILES} ]; then     # Lots of changes
         #echo $(head ${diffTmpFile})
         head ${diffTmpFile}
         
         midFiles=$(awk -v tot=$totFiles -v max=$MAXFILES 'BEGIN {print tot - max}')
-        echo "   ... ${midFiles} more changes (Changed $changeFiles, Added ${addFiles}, Removed ${remFiles})"
+        echo "   ... ${midFiles} more changes (${changes})"
         tail ${diffTmpFile}
     else                        # A 'small' number of changes
         echo ${totFiles} files changed:
         cat ${diffTmpFile}
     fi    
     rm ${diffTmpFile}
+    notify "${changes}"
 }
 
 # Pruning must be performed on named repos, otherwise just the last one
@@ -55,16 +58,29 @@ function Pruner {
     fi
 }
 
+## Add some eye candy
+function notify {
+    if [ $# -gt 0 ]; then
+        msg="${@}"      # Treat whatever was passed in as one string
+    else
+        msg="No message"
+    fi
+    # note the double quoted var to keep it as one argument
+    notify-send 'borgAuto' "${msg}" --icon=dialog-information
+}
+
+#---------------------------------------------------------------------------
+
+
 # Backup all of /home except a few excluded directories and files
 echo $'\n'"Creating ${USER}'s archive"
 borg create -v --stats  --compression auto,lzma,6    \
    ::'{hostname}-{user}-{now:%Y%m%dT%H%M}' \
-   /home/st33v  \
+   /home/${USER}  \
    /var/log/pacman.log \
    /etc/fstab          \
    /etc/systemd/system \
-   /boot/grub/*.cfg    \
-    --exclude '/home/$USER/cargo'   \
+    --exclude '/home/st33v/cargo'   \
     --exclude '/home/st33v/.*' \
     --exclude '*.vdi'               \
     --exclude '*.img'               \
@@ -92,18 +108,23 @@ Pruner olho
 prune_exit=$?
  
 # Include the remaining device capacity in the log
-echo $(df -hl | grep --color=never /mnt/bak)
- 
+diskSpaceFree=$(df -hl | grep --color=never /mnt/bak)
+echo "${diskSpaceFree}"
+notify "${diskSpaceFree}"
+
 # borg list :: --format {name:40}{start}{NL} --sort-by name,timestamp 
 
 # use highest exit code as global exit code
 global_exit=$(( backup_exit > prune_exit ? backup_exit : prune_exit ))
 
 if [ ${global_exit} -eq 0 ]; then
-    echo "Backup and Prune finished successfully"
+    exitmsg="Backup and Prune finished successfully"
 elif [ ${global_exit} -eq 1 ]; then
-    echo "Backup ($backup_exit) and/or Prune ($prune_exit) finished with warnings"
+    exitmsg="Backup ($backup_exit) and/or Prune ($prune_exit) finished with warnings"
 else
-    echo "Backup ($backup_exit) and/or Prune ($prune_exit) finished with errors"
+    exitmsg="Backup ($backup_exit) and/or Prune ($prune_exit) finished with errors"
 fi
+
+echo "${exitmsg}"
+notify "${exitmsg}"
 exit ${global_exit}
