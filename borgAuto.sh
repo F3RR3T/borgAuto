@@ -2,12 +2,31 @@
 # 8 Sept 2019 SJ Pratt
 # Copied from https://blog.andrewkeech.com/posts/170718_borg.html
 # the envvar $REPONAME is something you should just hardcode
- export BORG_REPO="/mnt/bak/borg"  # (now set in ~/.bashrc)
+# export BORG_REPO="/mnt/bak/borg"  # (now set in ~/.bashrc)
+
+# Route logging to journalctl
+2>&1
 
 MAXFILES=20     #Max number of file changes to log
+MOUNTPOINT=/mnt/bak
 
-# Route the normal process logging to journalctl
-2>&1
+# noauto = don't mount backup disk at boot
+# user = allow user to mount the disk
+# line from /etc/fstab:
+# UUID=XXXX 	/mnt/bak	btrfs		defaults,noauto,user			0 0
+
+# Try to mount the backup disk
+mountpoint -q ${MOUNTPOINT}
+if [ $? -eq 1 ]; then
+	echo "Mounting backup disk to ${MOUNTPOINT}."
+	mount -v ${MOUNTPOINT}
+fi
+
+if [ $? -ne 0 ]; then
+	echo "Failed to mount backup disk -- exiting"
+	exit 1
+fi
+
 
 # DIFF function
 # List changes between this archive and the previous one
@@ -125,6 +144,7 @@ else
     exitmsg="Backup ($backup_exit) and/or Prune ($prune_exit) finished with errors"
 fi
 
+umount -v ${MOUNTPOINT}
 echo "${exitmsg}"
 notify "${exitmsg}"
 exit ${global_exit}
