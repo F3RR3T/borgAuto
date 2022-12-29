@@ -17,15 +17,18 @@ MOUNTPOINT=/mnt/bak
 
 # Try to mount the backup disk
 mountpoint -q ${MOUNTPOINT}
-if [ $? -eq 1 ]; then
+mpExit=$?
+if [ $mpExit -eq 32 ]; then
 	echo "Mounting backup disk to ${MOUNTPOINT}."
 	mount -v ${MOUNTPOINT}
+    mountpoint -q ${MOUNTPOINT}
+    mpExit=$?
+    if [ $mpExit -ne 0 ] ; then
+      echo "Failed to mount backup disk (mountpoint returned $mpExit)-- exiting"
+	  exit 1
+    fi
 fi
 
-if [ $? -ne 0 ]; then
-	echo "Failed to mount backup disk -- exiting"
-	exit 1
-fi
 
 
 # DIFF function
